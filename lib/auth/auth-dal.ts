@@ -1,18 +1,17 @@
-import "server-only"
-import { cookies } from "next/headers"
+import { User } from "@/types/user"
 import { redirect } from "next/navigation"
 import { cache } from "react"
-import { apiFetchServer } from "./api-server"
+import "server-only"
+import { fetchWithToken } from "../api/api-server"
 
-export const verifySession = cache(async () => {
-  const cookieStore = await cookies()
-  const token = cookieStore.get("accessToken")?.value
+type Session = {
+  isAuth: true
+  user: User
+}
 
-  if (!token) {
-    redirect("/")
-  }
-
-  const res = await apiFetchServer("/auth/me")
+export const verifySession = cache(async (): Promise<Session> => {
+  const res = await fetchWithToken("/auth/me")
+  console.log("Verificando sessão:", res.status)
 
   if (res.status === 401 || res.status === 503) {
     redirect("/logout")
@@ -24,7 +23,7 @@ export const verifySession = cache(async () => {
   }
 })
 
-export const getUser = cache(async () => {
+export const getUser = cache(async (): Promise<User> => {
   const session = await verifySession()
   return session.user
 })

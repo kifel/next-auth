@@ -1,80 +1,40 @@
 import { cookies } from "next/headers"
-import { NextResponse } from "next/server"
 import "server-only"
-
-const ACCESS_TOKEN_MAX_AGE = 60 * 60 * 24 * 7
-const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 30
 
 export async function createSession(accessToken: string, refreshToken: string) {
   const cookieStore = await cookies()
 
-  setAccessToken(cookieStore, accessToken)
-  setRefreshToken(cookieStore, refreshToken)
-}
-
-export async function updateSession(
-  accessToken: string,
-  refreshToken?: string
-) {
-  const cookieStore = await cookies()
-
-  setAccessToken(cookieStore, accessToken)
-
-  if (refreshToken) {
-    setRefreshToken(cookieStore, refreshToken)
-  }
-}
-
-export async function destroySession() {
-  const cookieStore = await cookies()
-
-  cookieStore.delete("accessToken")
-  cookieStore.delete("refreshToken")
-}
-
-function setAccessToken(
-  cookieStore: Awaited<ReturnType<typeof cookies>>,
-  token: string
-) {
-  cookieStore.set("accessToken", token, {
+  cookieStore.set("accessToken", accessToken, {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: ACCESS_TOKEN_MAX_AGE,
+    maxAge: 60 * 15, // 15 min
   })
-}
 
-function setRefreshToken(
-  cookieStore: Awaited<ReturnType<typeof cookies>>,
-  token: string
-) {
-  cookieStore.set("refreshToken", token, {
+  cookieStore.set("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
     path: "/",
-    maxAge: REFRESH_TOKEN_MAX_AGE,
+    maxAge: 60 * 60 * 24 * 30, // 30 dias
   })
 }
 
-export function setAuthCookies(
-  response: NextResponse,
-  tokens: { accessToken: string; refreshToken?: string | null }
-) {
-  response.cookies.set("accessToken", tokens.accessToken, {
-    path: "/",
-    httpOnly: true,
-    secure: true,
-    sameSite: "lax",
-  })
+export async function updateSession(accessToken: string) {
+  const cookieStore = await cookies()
 
-  if (tokens.refreshToken) {
-    response.cookies.set("refreshToken", tokens.refreshToken, {
-      path: "/",
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-    })
-  }
+  cookieStore.set("accessToken", accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 15,
+  })
+}
+
+export async function deleteSession() {
+  const cookieStore = await cookies()
+  cookieStore.delete("accessToken")
+  cookieStore.delete("refreshToken")
 }
