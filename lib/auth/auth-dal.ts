@@ -11,7 +11,6 @@ type Session = {
 
 export const verifySession = cache(async (): Promise<Session> => {
   const res = await fetchWithToken("/auth/me")
-  console.log("Verificando sessão:", res.status)
 
   if (res.status === 401 || res.status === 503) {
     redirect("/logout")

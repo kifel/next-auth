@@ -14,7 +14,7 @@ export async function fetchWithToken(path: string, options: RequestInit = {}) {
       Authorization: `Bearer ${accessToken}`,
       ...(options.headers || {}),
     },
-    cache: "no-store",
+    cache: options.cache ?? (options.next ? undefined : "no-store"),
   })
 }
 
