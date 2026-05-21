@@ -3,6 +3,7 @@
 import { LoginFormSchema, LoginFormState } from "@/lib/auth/auth-definitions"
 import { createSession } from "@/lib/auth/session"
 import { redirect } from "next/navigation"
+import { z } from "zod"
 
 export async function login(_state: LoginFormState, formData: FormData) {
   const validatedFields = LoginFormSchema.safeParse({
@@ -12,7 +13,7 @@ export async function login(_state: LoginFormState, formData: FormData) {
 
   if (!validatedFields.success) {
     return {
-      errors: validatedFields.error.flatten().fieldErrors,
+      errors: z.flattenError(validatedFields.error).fieldErrors,
     }
   }
 
