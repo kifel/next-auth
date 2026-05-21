@@ -1,6 +1,7 @@
 "use server"
 
-import { apiFetch } from "@/lib/api/api-server"
+import { createColorRequest } from "@/lib/api/endpoints/color"
+import { ApiError } from "@/lib/api/errors/api-error"
 import { ColorFormSchema, ColorFormState } from "@/lib/color/color-definitions"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
@@ -20,21 +21,23 @@ export async function createColor(
     }
   }
 
-  const response = await apiFetch("/color/admin/add", {
-    method: "POST",
-    body: JSON.stringify(validatedFields.data),
-  })
+  try {
+    await createColorRequest(validatedFields.data)
 
-  if (!response.ok) {
-    const error = await response.json()
+    revalidatePath("/color")
+
     return {
-      apiErrors: error.errors,
+      message: "Cor criada com sucesso",
     }
-  }
+  } catch (error: unknown) {
+    if (error instanceof ApiError) {
+      return {
+        apiErrors: error.data?.errors ?? ["Erro inesperado"],
+      }
+    }
 
-  revalidatePath("/color")
-
-  return {
-    message: "Cor criada com sucesso!",
+    return {
+      apiErrors: ["Erro inesperado"],
+    }
   }
 }

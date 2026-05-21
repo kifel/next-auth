@@ -1,4 +1,4 @@
-export function ApiError({ errors }: { errors?: string[] }) {
+export function ViewApiError({ errors }: { errors?: string[] }) {
   if (!errors?.length) return null
 
   return (

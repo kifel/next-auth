@@ -1,7 +1,7 @@
 "use client"
 
 import { createColor } from "@/actions/color"
-import { ApiError } from "@/components/api-error"
+import { ViewApiError } from "@/components/api-error"
 import { Button } from "@/components/ui/button"
 import {
   Field,
@@ -44,7 +44,7 @@ export function ColorForm() {
           )}
         </Field>
 
-        <ApiError errors={state?.apiErrors} />
+        <ViewApiError errors={state?.apiErrors} />
 
         <Field>
           <Button disabled={pending} type="submit">
