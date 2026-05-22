@@ -1,8 +1,7 @@
 import { User } from "@/types/user"
-import { redirect } from "next/navigation"
 import { cache } from "react"
 import "server-only"
-import { fetchWithToken } from "../api/api-server"
+import { apiFetch } from "../api/api-server"
 
 type Session = {
   isAuth: true
@@ -10,12 +9,7 @@ type Session = {
 }
 
 export const verifySession = cache(async (): Promise<Session> => {
-  const res = await fetchWithToken("/auth/me")
-
-  if (res.status === 401 || res.status === 503) {
-    redirect("/logout")
-  }
-
+  const res = await apiFetch("/auth/me")
   return {
     isAuth: true,
     user: await res.json(),

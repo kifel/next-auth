@@ -50,12 +50,15 @@ export default async function Dashboard() {
             )}
           </div>
         </CardContent>
-        <CardFooter>
-          <Link href={"/logout"}>
+        <CardFooter className="flex flex-row gap-2">
+          <Link href={"/logout"} prefetch={false}>
             <Button variant={"outline"} size={"sm"} className="w-full">
               Sair
             </Button>
           </Link>
+          <Link href={"/color"} ><Button variant={"outline"} size={"sm"} className="w-full">
+            Cores
+          </Button></Link>
         </CardFooter>
       </Card>
     </div>

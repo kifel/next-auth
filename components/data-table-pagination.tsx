@@ -100,6 +100,7 @@ export function DataTablePagination({
             <PaginationItem>
               <PaginationPrevious
                 href={createPageUrl(currentPage - 1)}
+                prefetch={false}
               />
             </PaginationItem>
           )}
@@ -111,6 +112,7 @@ export function DataTablePagination({
                 <PaginationLink
                   href={createPageUrl(index)}
                   isActive={index === currentPage}
+                  prefetch={false}
                 >
                   {index + 1}
                 </PaginationLink>
@@ -121,6 +123,7 @@ export function DataTablePagination({
           {currentPage < totalPages - 1 && (
             <PaginationItem>
               <PaginationNext
+                prefetch={false}
                 href={createPageUrl(currentPage + 1)}
               />
             </PaginationItem>

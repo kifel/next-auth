@@ -1,8 +1,11 @@
-import { Geist_Mono, DM_Sans } from "next/font/google"
+import { DM_Sans, Geist_Mono } from "next/font/google"
 
-import "./globals.css"
+import { SessionToast } from "@/components/auth/session-toast"
 import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
+import { Suspense } from "react"
+import "./globals.css"
 
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -34,7 +37,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <Suspense fallback={null}>
+            <SessionToast />
+          </Suspense>
           {children}
+          <Toaster richColors />
         </ThemeProvider>
       </body>
     </html>

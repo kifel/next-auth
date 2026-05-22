@@ -6,14 +6,19 @@ import {
   getColorById,
   updateColorRequest,
 } from "@/lib/api/endpoints/color"
+
 import { ApiError } from "@/lib/api/errors/api-error"
+
 import {
   ColorFormSchema,
   ColorFormState,
   UpdateColorFormSchema,
 } from "@/lib/color/color-definitions"
+
 import { Color } from "@/types/color"
+
 import { revalidatePath } from "next/cache"
+
 import { z } from "zod"
 
 export async function createColor(
@@ -46,9 +51,7 @@ export async function createColor(
       }
     }
 
-    return {
-      apiErrors: ["Erro inesperado"],
-    }
+    throw error
   }
 }
 
@@ -77,12 +80,18 @@ export async function updateColor(
     })
 
     revalidatePath("/color")
-    return { message: "Cor atualizada com sucesso" }
+
+    return {
+      message: "Cor atualizada com sucesso",
+    }
   } catch (error: unknown) {
     if (error instanceof ApiError) {
-      return { apiErrors: error.data?.errors ?? ["Erro inesperado"] }
+      return {
+        apiErrors: error.data?.errors ?? ["Erro inesperado"],
+      }
     }
-    return { apiErrors: ["Erro inesperado"] }
+
+    throw error
   }
 }
 
@@ -93,19 +102,25 @@ export async function getColor(id: number): Promise<Color> {
     if (error instanceof ApiError) {
       throw new Error(error.data?.errors?.[0] ?? "Erro inesperado")
     }
-    throw new Error("Erro inesperado")
+
+    throw error
   }
 }
 
 export async function deleteColor(id: number): Promise<{ error?: string }> {
   try {
     await deleteColorRequest(id)
+
     revalidatePath("/color")
+
     return {}
   } catch (error: unknown) {
     if (error instanceof ApiError) {
-      return { error: error.data?.errors?.[0] ?? "Erro inesperado" }
+      return {
+        error: error.data?.errors?.[0] ?? "Erro inesperado",
+      }
     }
-    return { error: "Erro inesperado" }
+
+    throw error
   }
 }
