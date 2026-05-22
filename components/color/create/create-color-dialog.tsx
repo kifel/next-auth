@@ -1,33 +1,23 @@
 "use client"
 
+import { FormDialog } from "@/components/form-dialog"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import { Plus } from "lucide-react"
 import { ColorForm } from "./create-color-form"
 
-export function ColorDialog() {
+export function CreateColorDialog() {
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <FormDialog
+      title="Nova Cor"
+      description="Adicione uma nova cor"
+      trigger={
         <Button className="gap-2">
           <Plus className="size-4" />
           Nova cor
         </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Nova Cor</DialogTitle>
-          <DialogDescription>Adicione uma nova cor</DialogDescription>
-        </DialogHeader>
-        <ColorForm />
-      </DialogContent>
-    </Dialog>
+      }
+    >
+      <ColorForm />
+    </FormDialog>
   )
 }

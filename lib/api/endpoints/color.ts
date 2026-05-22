@@ -78,3 +78,13 @@ export async function updateColorRequest(id: number, data: UpdateColorRequest) {
 
   return response.json()
 }
+
+export async function deleteColorRequest(id: number) {
+  const response = await apiFetch(`/color/admin/delete/${id}`, {
+    method: "DELETE",
+  })
+
+  if (!response.ok) {
+    await handleApiError(response)
+  }
+}

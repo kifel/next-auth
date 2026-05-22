@@ -2,6 +2,7 @@
 
 import {
   createColorRequest,
+  deleteColorRequest,
   getColorById,
   updateColorRequest,
 } from "@/lib/api/endpoints/color"
@@ -93,5 +94,18 @@ export async function getColor(id: number): Promise<Color> {
       throw new Error(error.data?.errors?.[0] ?? "Erro inesperado")
     }
     throw new Error("Erro inesperado")
+  }
+}
+
+export async function deleteColor(id: number): Promise<{ error?: string }> {
+  try {
+    await deleteColorRequest(id)
+    revalidatePath("/color")
+    return {}
+  } catch (error: unknown) {
+    if (error instanceof ApiError) {
+      return { error: error.data?.errors?.[0] ?? "Erro inesperado" }
+    }
+    return { error: "Erro inesperado" }
   }
 }

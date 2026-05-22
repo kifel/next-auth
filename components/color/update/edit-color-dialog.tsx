@@ -1,29 +1,51 @@
 "use client"
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { getColor } from "@/actions/color"
+import { FormDialog } from "@/components/form-dialog"
+import { Button } from "@/components/ui/button"
+import { Color } from "@/types/color"
+import { Pencil } from "lucide-react"
+import { useState } from "react"
+import { EditColorForm } from "./edit-color-form"
 
 type Props = {
-  open: boolean
-  onOpenChangeAction: (_open: boolean) => void
-  children: React.ReactNode
+  color: Color
 }
 
-export function EditColorDialog({ open, onOpenChangeAction, children }: Props) {
+export function EditColorDialog({ color }: Props) {
+  const [open, setOpen] = useState(false)
+  const [data, setData] = useState<Color | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  function handleOpen() {
+    setOpen(true)
+    setLoading(true)
+    getColor(color.id)
+      .then(setData)
+      .finally(() => setLoading(false))
+  }
+
+  function handleClose(isOpen: boolean) {
+    if (!isOpen) setData(null)
+    setOpen(isOpen)
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChangeAction}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Editar Cor</DialogTitle>
-          <DialogDescription>Atualize os dados da cor</DialogDescription>
-        </DialogHeader>
-        {children}
-      </DialogContent>
-    </Dialog>
+    <FormDialog
+      title="Editar Cor"
+      description="Atualize os dados da cor"
+      open={open}
+      onOpenChangeAction={handleClose}
+      trigger={
+        <Button variant="ghost" size="icon" onClick={handleOpen}>
+          <Pencil className="size-4" />
+        </Button>
+      }
+    >
+      {loading && <p className="text-sm text-muted-foreground">Carregando...</p>}
+      {!loading && data && (
+        <EditColorForm color={data} onSuccessAction={() => setOpen(false)} />
+      )}
+    </FormDialog>
   )
 }

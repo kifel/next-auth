@@ -1,5 +1,5 @@
 import { ColorTable } from "@/components/color/color-table"
-import { ColorDialog } from "@/components/color/create/create-color-dialog"
+import { CreateColorDialog } from "@/components/color/create/create-color-dialog"
 import { DataTablePagination } from "@/components/data-table-pagination"
 import { DynamicFilter } from "@/components/filtro"
 
@@ -40,7 +40,7 @@ export default async function ColorPage({
           </p>
         </div>
 
-        <ColorDialog />
+        <CreateColorDialog />
       </div>
 
       <div className="rounded-xl border bg-card shadow-sm">

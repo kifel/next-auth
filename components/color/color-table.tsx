@@ -16,6 +16,7 @@ export function ColorTable({ data }: Props) {
             <TableHead>Código</TableHead>
             <TableHead>Descrição</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead className="w-12" />
           </TableRow>
         </TableHeader>
         <TableBody>
