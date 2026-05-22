@@ -1,8 +1,17 @@
 "use server"
 
-import { createColorRequest } from "@/lib/api/endpoints/color"
+import {
+  createColorRequest,
+  getColorById,
+  updateColorRequest,
+} from "@/lib/api/endpoints/color"
 import { ApiError } from "@/lib/api/errors/api-error"
-import { ColorFormSchema, ColorFormState } from "@/lib/color/color-definitions"
+import {
+  ColorFormSchema,
+  ColorFormState,
+  UpdateColorFormSchema,
+} from "@/lib/color/color-definitions"
+import { Color } from "@/types/color"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
@@ -39,5 +48,50 @@ export async function createColor(
     return {
       apiErrors: ["Erro inesperado"],
     }
+  }
+}
+
+export async function updateColor(
+  _state: ColorFormState,
+  formData: FormData
+): Promise<ColorFormState> {
+  const id = Number(formData.get("id"))
+
+  const validatedFields = UpdateColorFormSchema.safeParse({
+    code: formData.get("code"),
+    description: formData.get("description"),
+    active: formData.get("active"),
+  })
+
+  if (!validatedFields.success) {
+    return {
+      errors: z.flattenError(validatedFields.error).fieldErrors,
+    }
+  }
+
+  try {
+    await updateColorRequest(id, {
+      ...validatedFields.data,
+      active: validatedFields.data.active === "true",
+    })
+
+    revalidatePath("/color")
+    return { message: "Cor atualizada com sucesso" }
+  } catch (error: unknown) {
+    if (error instanceof ApiError) {
+      return { apiErrors: error.data?.errors ?? ["Erro inesperado"] }
+    }
+    return { apiErrors: ["Erro inesperado"] }
+  }
+}
+
+export async function getColor(id: number): Promise<Color> {
+  try {
+    return await getColorById(id)
+  } catch (error: unknown) {
+    if (error instanceof ApiError) {
+      throw new Error(error.data?.errors?.[0] ?? "Erro inesperado")
+    }
+    throw new Error("Erro inesperado")
   }
 }

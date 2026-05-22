@@ -15,6 +15,12 @@ type ColorRequest = {
   description: string
 }
 
+type UpdateColorRequest = {
+  code: string
+  description: string
+  active: boolean
+}
+
 export async function searchColors(
   params: SearchColorsParams = {}
 ): Promise<Page<Color>> {
@@ -37,9 +43,32 @@ export async function searchColors(
   return res.json()
 }
 
+export async function getColorById(id: number): Promise<Color> {
+  const res = await apiFetch(`/color/${id}`)
+
+  if (!res.ok) {
+    await handleApiError(res)
+  }
+
+  return res.json()
+}
+
 export async function createColorRequest(data: ColorRequest) {
   const response = await apiFetch("/color/admin/add", {
     method: "POST",
+    body: JSON.stringify(data),
+  })
+
+  if (!response.ok) {
+    await handleApiError(response)
+  }
+
+  return response.json()
+}
+
+export async function updateColorRequest(id: number, data: UpdateColorRequest) {
+  const response = await apiFetch(`/color/admin/update/${id}`, {
+    method: "PUT",
     body: JSON.stringify(data),
   })
 
