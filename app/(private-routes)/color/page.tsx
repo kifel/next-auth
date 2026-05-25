@@ -2,6 +2,8 @@ import { ColorTable } from "@/components/color/color-table"
 import { CreateColorDialog } from "@/components/color/create/create-color-dialog"
 import { DataTablePagination } from "@/components/data-table-pagination"
 import { DynamicFilter } from "@/components/filtro"
+import { getUserWithPermissions } from "@/lib/auth/auth-dal"
+import { can } from "@/lib/auth/permissions"
 import { searchColors } from "@/lib/color/color-dal"
 
 
@@ -18,6 +20,8 @@ export default async function ColorPage({
   searchParams,
 }: Props) {
   const params = await searchParams
+  const session = await getUserWithPermissions()
+  const perms = session!.permissions
 
   const result = await searchColors({
     description: params.description,
@@ -57,7 +61,7 @@ export default async function ColorPage({
           </p>
         </div>
 
-        <CreateColorDialog />
+        {can(perms, "create", "color") && <CreateColorDialog />}
       </div>
 
       <div className="rounded-xl border bg-card shadow-sm">

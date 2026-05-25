@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "./ui/select"
 
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 type Props = {
   page: {
@@ -36,6 +36,7 @@ type Props = {
 export function DataTablePagination({
   page,
 }: Props) {
+  const router = useRouter()
   const searchParams = useSearchParams()
 
   const currentPage = page.number
@@ -61,7 +62,7 @@ export function DataTablePagination({
     params.set("page", "0")
     params.set("size", size)
 
-    window.location.href = `?${params.toString()}`
+    router.replace(`?${params.toString()}`)
   }
 
   return (

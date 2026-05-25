@@ -4,6 +4,7 @@ import "server-only"
 import { apiFetch, NetworkError } from "../api/api-server"
 
 import { User } from "@/types/user"
+import { buildPermissions, serializePermissions } from "./permissions"
 
 type SessionResult =
   | {
@@ -52,4 +53,20 @@ export const getUser = cache(async () => {
   }
 
   return session.user
+})
+
+export const getUserWithPermissions = cache(async () => {
+  const user = await getUser()
+
+  if (!user) {
+    return null
+  }
+
+  const permissions = buildPermissions(user.roles)
+
+  return {
+    ...user,
+    permissions,
+    permissionsSerialized: serializePermissions(permissions),
+  }
 })
