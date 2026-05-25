@@ -1,76 +1,85 @@
-import { cookies } from "next/headers"
+import { refreshSession } from "@/lib/auth/auth-api"
 import { NextRequest, NextResponse } from "next/server"
 
 const publicRoutes = ["/"]
 
-export default async function proxy(req: NextRequest) {
+type JwtPayload = {
+  exp: number
+}
+
+function isExpired(token: string) {
+  try {
+    const payload = JSON.parse(
+      Buffer.from(token.split(".")[1], "base64").toString()
+    ) as JwtPayload
+    return payload.exp * 1000 < Date.now()
+  } catch {
+    return true
+  }
+}
+
+export default async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname
   const isPublicRoute = publicRoutes.includes(path)
 
   if (path === "/logout") {
-    const res = NextResponse.redirect(new URL("/", req.nextUrl))
+    const reason = req.nextUrl.searchParams.get("reason")
+
+    const url = new URL("/", req.nextUrl)
+    if (reason) url.searchParams.set("reason", reason)
+
+    const res = NextResponse.redirect(url)
     res.cookies.delete("accessToken")
     res.cookies.delete("refreshToken")
+
     return res
   }
 
-  const accessToken = (await cookies()).get("accessToken")?.value
-  const refreshToken = (await cookies()).get("refreshToken")?.value
+  const accessToken = req.cookies.get("accessToken")?.value
+  const refreshToken = req.cookies.get("refreshToken")?.value
 
-  if (!isPublicRoute && !accessToken && refreshToken) {
-    const newTokens = await tryRefresh(refreshToken)
+  const hasValidAccessToken = accessToken && !isExpired(accessToken)
 
-    if (newTokens) {
-      const res = isPublicRoute
-        ? NextResponse.redirect(new URL("/dashboard", req.nextUrl))
+  if (!hasValidAccessToken) {
+    if (!refreshToken) {
+      if (!isPublicRoute) {
+        return NextResponse.redirect(new URL("/", req.url))
+      }
+      return NextResponse.next()
+    }
+
+    try {
+      const newTokens = await refreshSession(refreshToken)
+
+      if (!newTokens) {
+        return NextResponse.redirect(new URL("/logout", req.url))
+      }
+
+      const response = isPublicRoute
+        ? NextResponse.redirect(new URL("/dashboard", req.url))
         : NextResponse.next()
 
-      res.cookies.set("accessToken", newTokens.accessToken, {
+      response.cookies.set("accessToken", newTokens.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
+        path: "/",
         maxAge: 60 * 15,
       })
-      return res
-    }
 
-    if (!isPublicRoute && !accessToken) {
-      return NextResponse.redirect(new URL("/", req.url))
+      return response
+    } catch {
+      return NextResponse.redirect(new URL("/logout", req.url))
     }
-
-    if (isPublicRoute && accessToken) {
-      return NextResponse.redirect(new URL("/dashboard", req.url))
-    }
-
-    return NextResponse.next()
   }
 
-  if (!isPublicRoute && !accessToken) {
-    return NextResponse.redirect(new URL("/", req.nextUrl))
-  }
-
-  if (isPublicRoute && accessToken) {
-    return NextResponse.redirect(new URL("/dashboard", req.nextUrl))
+  if (isPublicRoute) {
+    return NextResponse.redirect(new URL("/dashboard", req.url))
   }
 
   return NextResponse.next()
 }
 
-async function tryRefresh(refreshToken: string) {
-  try {
-    const res = await fetch(`${process.env.API_URL}/auth/refresh-token`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${refreshToken}` },
-    })
-    if (!res.ok) return null
-    const data = await res.json()
-    return { accessToken: data.access_token }
-  } catch {
-    return null
-  }
-}
-
-// Routes Proxy should not run on
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
 }

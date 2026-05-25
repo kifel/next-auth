@@ -9,9 +9,14 @@ import {
 } from "@/components/ui/card"
 import { getUser } from "@/lib/auth/auth-dal"
 import Link from "next/link"
+import { redirect } from "next/navigation"
 
 export default async function Dashboard() {
   const user = await getUser()
+
+  if (!user) {
+    redirect("/")
+  }
 
   return (
     <div className="flex justify-center p-6">
@@ -50,12 +55,15 @@ export default async function Dashboard() {
             )}
           </div>
         </CardContent>
-        <CardFooter>
-          <Link href={"/logout"}>
+        <CardFooter className="flex flex-row gap-2">
+          <Link href={"/logout"} prefetch={false}>
             <Button variant={"outline"} size={"sm"} className="w-full">
               Sair
             </Button>
           </Link>
+          <Link href={"/color"} ><Button variant={"outline"} size={"sm"} className="w-full">
+            Cores
+          </Button></Link>
         </CardFooter>
       </Card>
     </div>

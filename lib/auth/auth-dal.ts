@@ -1,29 +1,72 @@
-import { User } from "@/types/user"
-import { redirect } from "next/navigation"
 import { cache } from "react"
 import "server-only"
-import { fetchWithToken } from "../api/api-server"
 
-type Session = {
-  isAuth: true
-  user: User
-}
+import { apiFetch, NetworkError } from "../api/api-server"
 
-export const verifySession = cache(async (): Promise<Session> => {
-  const res = await fetchWithToken("/auth/me")
-  console.log("Verificando sessão:", res.status)
+import { User } from "@/types/user"
+import { buildPermissions, serializePermissions } from "./permissions"
 
-  if (res.status === 401 || res.status === 503) {
-    redirect("/logout")
-  }
+type SessionResult =
+  | {
+      isAuth: true
+      user: User
+    }
+  | {
+      isAuth: false
+      error?: string
+    }
 
-  return {
-    isAuth: true,
-    user: await res.json(),
+export const verifySession = cache(async (): Promise<SessionResult> => {
+  try {
+    const res = await apiFetch("/auth/me")
+
+    if (!res.ok) {
+      return {
+        isAuth: false,
+      }
+    }
+
+    return {
+      isAuth: true,
+      user: await res.json(),
+    }
+  } catch (error) {
+    if (error instanceof NetworkError) {
+      return {
+        isAuth: false,
+        error: "Servidor indisponível",
+      }
+    }
+
+    return {
+      isAuth: false,
+      error: "Erro inesperado",
+    }
   }
 })
 
-export const getUser = cache(async (): Promise<User> => {
+export const getUser = cache(async () => {
   const session = await verifySession()
+
+  if (!session.isAuth) {
+    return null
+  }
+
   return session.user
+})
+
+export const getUserWithPermissions = cache(async () => {
+  const user = await getUser()
+
+  if (!user) {
+    return null
+  }
+
+  const permissions = buildPermissions(user.roles)
+
+  return {
+    ...user,
+    permissions,
+    permissionsSerialized: serializePermissions(permissions),
+  }
 })
