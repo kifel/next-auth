@@ -10,9 +10,11 @@ import { EditColorDialog } from "./update/edit-color-dialog"
 
 type Props = {
   color: Color
+  canEdit: boolean
+  canDelete: boolean
 }
 
-export function ColorTableRow({ color }: Props) {
+export function ColorTableRow({ color, canEdit, canDelete }: Props) {
   const parsed = parseColorText(color.description)
   return (
     <TableRow className="cursor-pointer">
@@ -34,11 +36,13 @@ export function ColorTableRow({ color }: Props) {
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1">
-          <EditColorDialog color={color} />
-          <ConfirmDeleteDialog
-            description={color.description}
-            deleteAction={() => deleteColor(color.id)}
-          />
+          {canEdit && <EditColorDialog color={color} />}
+          {canDelete && (
+            <ConfirmDeleteDialog
+              description={color.description}
+              deleteAction={() => deleteColor(color.id)}
+            />
+          )}
         </div>
       </TableCell>
     </TableRow>

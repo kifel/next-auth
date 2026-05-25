@@ -92,7 +92,10 @@ export default async function ColorPage({
         </div>
 
         <div className="p-4">
-          <ColorTable data={colors.content} />
+          <ColorTable data={colors.content}
+            canEdit={can(perms, "edit", "color")}
+            canDelete={can(perms, "delete", "color")}
+          />
         </div>
 
         <div className="border-t p-4">

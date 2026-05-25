@@ -4,9 +4,11 @@ import { ColorTableRow } from "./color-table-row"
 
 type Props = {
   data: Color[]
+  canEdit: boolean
+  canDelete: boolean
 }
 
-export function ColorTable({ data }: Props) {
+export function ColorTable({ data, canEdit, canDelete }: Props) {
   return (
     <div className="rounded-md border">
       <Table>
@@ -21,7 +23,12 @@ export function ColorTable({ data }: Props) {
         </TableHeader>
         <TableBody>
           {data.map((color) => (
-            <ColorTableRow key={color.id} color={color} />
+            <ColorTableRow
+              key={color.id}
+              color={color}
+              canEdit={canEdit}
+              canDelete={canDelete}
+            />
           ))}
         </TableBody>
       </Table>
