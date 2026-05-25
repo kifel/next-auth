@@ -48,25 +48,29 @@ export default async function middleware(req: NextRequest) {
       return NextResponse.next()
     }
 
-    const newTokens = await refreshSession(refreshToken)
+    try {
+      const newTokens = await refreshSession(refreshToken)
 
-    if (!newTokens) {
+      if (!newTokens) {
+        return NextResponse.redirect(new URL("/logout", req.url))
+      }
+
+      const response = isPublicRoute
+        ? NextResponse.redirect(new URL("/dashboard", req.url))
+        : NextResponse.next()
+
+      response.cookies.set("accessToken", newTokens.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 15,
+      })
+
+      return response
+    } catch {
       return NextResponse.redirect(new URL("/logout", req.url))
     }
-
-    const response = isPublicRoute
-      ? NextResponse.redirect(new URL("/dashboard", req.url))
-      : NextResponse.next()
-
-    response.cookies.set("accessToken", newTokens.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 15,
-    })
-
-    return response
   }
 
   if (isPublicRoute) {

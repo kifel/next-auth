@@ -2,8 +2,7 @@ import { ColorTable } from "@/components/color/color-table"
 import { CreateColorDialog } from "@/components/color/create/create-color-dialog"
 import { DataTablePagination } from "@/components/data-table-pagination"
 import { DynamicFilter } from "@/components/filtro"
-
-import { searchColors } from "@/lib/api/endpoints/color"
+import { searchColors } from "@/lib/color/color-dal"
 
 
 type Props = {
@@ -20,12 +19,30 @@ export default async function ColorPage({
 }: Props) {
   const params = await searchParams
 
-  const colors = await searchColors({
+  const result = await searchColors({
     description: params.description,
     code: params.code,
     page: Number(params.page ?? 0),
     size: Number(params.size ?? 10),
   })
+
+  if (result.error || !result.data) {
+    return (
+      <div className="p-6">
+        <div className="rounded-xl border border-destructive/20 bg-card p-6">
+          <h2 className="text-lg font-semibold">
+            Erro ao carregar cores
+          </h2>
+
+          <p className="mt-2 text-sm text-muted-foreground">
+            {result.error}
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  const colors = result.data
 
   return (
     <div className="flex flex-col gap-6 p-6">

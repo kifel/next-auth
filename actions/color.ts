@@ -1,9 +1,10 @@
 "use server"
 
+import { NetworkError } from "@/lib/api/api-server"
 import {
   createColorRequest,
   deleteColorRequest,
-  getColorById,
+  getColorByIdRequest,
   updateColorRequest,
 } from "@/lib/api/endpoints/color"
 
@@ -12,10 +13,9 @@ import { ApiError } from "@/lib/api/errors/api-error"
 import {
   ColorFormSchema,
   ColorFormState,
+  GetColorResult,
   UpdateColorFormSchema,
 } from "@/lib/color/color-definitions"
-
-import { Color } from "@/types/color"
 
 import { revalidatePath } from "next/cache"
 
@@ -51,7 +51,15 @@ export async function createColor(
       }
     }
 
-    throw error
+    if (error instanceof NetworkError) {
+      return {
+        apiErrors: ["Servidor indisponível"],
+      }
+    }
+
+    return {
+      apiErrors: ["Erro inesperado"],
+    }
   }
 }
 
@@ -91,19 +99,41 @@ export async function updateColor(
       }
     }
 
-    throw error
+    if (error instanceof NetworkError) {
+      return {
+        apiErrors: ["Servidor indisponível"],
+      }
+    }
+
+    return {
+      apiErrors: ["Erro inesperado"],
+    }
   }
 }
 
-export async function getColor(id: number): Promise<Color> {
+export async function getColorAction(id: number): Promise<GetColorResult> {
   try {
-    return await getColorById(id)
-  } catch (error: unknown) {
+    const color = await getColorByIdRequest(id)
+
+    return {
+      data: color,
+    }
+  } catch (error) {
     if (error instanceof ApiError) {
-      throw new Error(error.data?.errors?.[0] ?? "Erro inesperado")
+      return {
+        error: error.data?.errors?.[0] ?? "Erro inesperado",
+      }
     }
 
-    throw error
+    if (error instanceof NetworkError) {
+      return {
+        error: "Servidor indisponível",
+      }
+    }
+
+    return {
+      error: "Erro inesperado",
+    }
   }
 }
 
@@ -121,6 +151,14 @@ export async function deleteColor(id: number): Promise<{ error?: string }> {
       }
     }
 
-    throw error
+    if (error instanceof NetworkError) {
+      return {
+        error: "Servidor indisponível",
+      }
+    }
+
+    return {
+      error: "Erro inesperado",
+    }
   }
 }

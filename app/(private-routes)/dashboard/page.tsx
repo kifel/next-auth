@@ -9,9 +9,14 @@ import {
 } from "@/components/ui/card"
 import { getUser } from "@/lib/auth/auth-dal"
 import Link from "next/link"
+import { redirect } from "next/navigation"
 
 export default async function Dashboard() {
   const user = await getUser()
+
+  if (!user) {
+    redirect("/")
+  }
 
   return (
     <div className="flex justify-center p-6">

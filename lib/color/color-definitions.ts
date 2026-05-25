@@ -1,3 +1,4 @@
+import { Color } from "@/types/color"
 import { z } from "zod"
 
 export const ColorFormSchema = z.object({
@@ -24,3 +25,11 @@ export type ColorFormState =
       message?: string
     }
   | undefined
+
+export type GetColorResult =
+  | {
+      data: Color
+    }
+  | {
+      error: string
+    }

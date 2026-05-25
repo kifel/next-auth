@@ -3,35 +3,32 @@ import { Page } from "@/types/page"
 import { apiFetch } from "../api-server"
 import { handleApiError } from "../errors/handle-api-error"
 
-type SearchColorsParams = {
+export type SearchColorsParams = {
   description?: string
   code?: string
   page?: number
   size?: number
 }
 
-type ColorRequest = {
+export type ColorRequest = {
   code: string
   description: string
 }
 
-type UpdateColorRequest = {
+export type UpdateColorRequest = {
   code: string
   description: string
   active: boolean
 }
 
-export async function searchColors(
+export async function searchColorsRequest(
   params: SearchColorsParams = {}
 ): Promise<Page<Color>> {
   const query = new URLSearchParams()
 
   query.set("page", String(params.page ?? 0))
-
   query.set("size", String(params.size ?? 10))
-
   query.set("description", params.description ?? "")
-
   query.set("code", params.code ?? "")
 
   const res = await apiFetch(`/color/search?${query.toString()}`)
@@ -43,7 +40,7 @@ export async function searchColors(
   return res.json()
 }
 
-export async function getColorById(id: number): Promise<Color> {
+export async function getColorByIdRequest(id: number): Promise<Color> {
   const res = await apiFetch(`/color/${id}`)
 
   if (!res.ok) {

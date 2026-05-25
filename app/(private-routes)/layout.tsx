@@ -9,12 +9,16 @@ interface PrivateLayoutProps {
 export default async function PrivateLayout({ children }: PrivateLayoutProps) {
   const session = await getUser();
 
+  if (!session) {
+    redirect("/logout")
+  }
+
   const hasUserRole = session.roles?.some(
     (role) => role.name === "ROLE_USER"
   );
 
   if (!hasUserRole) {
-    redirect("/");
+    redirect("/unauthorized")
   }
 
   return (
