@@ -8,6 +8,7 @@ import {
 
 import { NetworkError } from "@/lib/api/api-server"
 import { ApiError } from "@/lib/api/errors/api-error"
+import { rethrowIfRedirectError } from "../next/rethrow-redirect"
 
 export async function getColor(id: number) {
   try {
@@ -18,6 +19,7 @@ export async function getColor(id: number) {
       error: null,
     }
   } catch (error) {
+    rethrowIfRedirectError(error)
     if (error instanceof ApiError) {
       return {
         data: null,
@@ -48,6 +50,7 @@ export async function searchColors(params: SearchColorsParams = {}) {
       error: null,
     }
   } catch (error) {
+    rethrowIfRedirectError(error)
     if (error instanceof ApiError) {
       return {
         data: null,

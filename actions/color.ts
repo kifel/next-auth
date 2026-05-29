@@ -16,6 +16,7 @@ import {
   GetColorResult,
   UpdateColorFormSchema,
 } from "@/lib/color/color-definitions"
+import { rethrowIfRedirectError } from "@/lib/next/rethrow-redirect"
 
 import { revalidatePath } from "next/cache"
 
@@ -45,6 +46,7 @@ export async function createColor(
       message: "Cor criada com sucesso",
     }
   } catch (error: unknown) {
+    rethrowIfRedirectError(error)
     if (error instanceof ApiError) {
       return {
         apiErrors: error.data?.errors ?? ["Erro inesperado"],
@@ -93,6 +95,7 @@ export async function updateColor(
       message: "Cor atualizada com sucesso",
     }
   } catch (error: unknown) {
+    rethrowIfRedirectError(error)
     if (error instanceof ApiError) {
       return {
         apiErrors: error.data?.errors ?? ["Erro inesperado"],
@@ -119,6 +122,7 @@ export async function getColorAction(id: number): Promise<GetColorResult> {
       data: color,
     }
   } catch (error) {
+    rethrowIfRedirectError(error)
     if (error instanceof ApiError) {
       return {
         error: error.data?.errors?.[0] ?? "Erro inesperado",
@@ -145,6 +149,7 @@ export async function deleteColor(id: number): Promise<{ error?: string }> {
 
     return {}
   } catch (error: unknown) {
+    rethrowIfRedirectError(error)
     if (error instanceof ApiError) {
       return {
         error: error.data?.errors?.[0] ?? "Erro inesperado",

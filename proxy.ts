@@ -19,6 +19,7 @@ function isExpired(token: string) {
 }
 
 export default async function middleware(req: NextRequest) {
+  const isServerAction = req.headers.get("next-action") !== null
   const path = req.nextUrl.pathname
   const isPublicRoute = publicRoutes.includes(path)
 
@@ -43,6 +44,9 @@ export default async function middleware(req: NextRequest) {
   if (!hasValidAccessToken) {
     if (!refreshToken) {
       if (!isPublicRoute) {
+        if (isServerAction) {
+          return NextResponse.next()
+        }
         return NextResponse.redirect(new URL("/", req.url))
       }
       return NextResponse.next()
@@ -52,7 +56,13 @@ export default async function middleware(req: NextRequest) {
       const newTokens = await refreshSession(refreshToken)
 
       if (!newTokens) {
-        return NextResponse.redirect(new URL("/logout", req.url))
+        if (isServerAction) {
+          return NextResponse.next()
+        }
+
+        return NextResponse.redirect(
+          new URL("/logout?reason=session_expired", req.url)
+        )
       }
 
       const response = isPublicRoute
@@ -69,7 +79,13 @@ export default async function middleware(req: NextRequest) {
 
       return response
     } catch {
-      return NextResponse.redirect(new URL("/logout", req.url))
+      if (isServerAction) {
+        return NextResponse.next()
+      }
+
+      return NextResponse.redirect(
+        new URL("/logout?reason=session_expired", req.url)
+      )
     }
   }
 

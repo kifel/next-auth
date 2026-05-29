@@ -4,6 +4,7 @@ import "server-only"
 import { apiFetch, NetworkError } from "../api/api-server"
 
 import { User } from "@/types/user"
+import { rethrowIfRedirectError } from "../next/rethrow-redirect"
 import { buildPermissions, serializePermissions } from "./permissions"
 
 type SessionResult =
@@ -31,6 +32,7 @@ export const verifySession = cache(async (): Promise<SessionResult> => {
       user: await res.json(),
     }
   } catch (error) {
+    rethrowIfRedirectError(error)
     if (error instanceof NetworkError) {
       return {
         isAuth: false,
